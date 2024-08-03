@@ -8,18 +8,7 @@ public class PlayerMovementTutorial : MonoBehaviour
     [Header("Movement")]
     public float moveSpeed;
 
-    public float groundDrag;
-    public float wallDrag;
 
-    [HideInInspector] public float walkSpeed;
-    [HideInInspector] public float sprintSpeed;
-
-
-    [Header("Ground Check")]
-    public float playerHeight;
-    public LayerMask whatIsGround;
-    bool grounded;
-    bool wallStacked;
 
     public Transform orientation;
 
@@ -38,23 +27,7 @@ public class PlayerMovementTutorial : MonoBehaviour
 
     private void Update()
     {
-
-        grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.3f, whatIsGround);
-        wallStacked = Physics.Raycast(transform.position + Vector3.up, Vector3.forward, 1f, whatIsGround);
-
         MyInput();
-        SpeedControl();
-
-
-        if (grounded)
-            rb.linearDamping = groundDrag;
-        else
-            rb.linearDamping = 0;
-
-        if (wallStacked)
-            rb.linearDamping = wallDrag;
-
-        Debug.DrawRay(transform.position + Vector3.up, Vector3.forward, Color.green, 1f);
     }
 
     private void FixedUpdate()
@@ -72,24 +45,9 @@ public class PlayerMovementTutorial : MonoBehaviour
     {
 
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
-
-        if (grounded)
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
-
-        else if (!grounded)
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+        moveDirection.y = rb.linearVelocity.y;
+        Vector3 velocity = transform.TransformVector(moveDirection);
+        rb.linearVelocity = velocity * moveSpeed;
     }
-
-    private void SpeedControl()
-    {
-        Vector3 flatVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-
-        if (flatVel.magnitude > moveSpeed)
-        {
-            Vector3 limitedVel = flatVel.normalized * moveSpeed;
-            rb.linearVelocity = new Vector3(limitedVel.x, rb.linearVelocity.y, limitedVel.z);
-        }
-    }
-
 
 }
